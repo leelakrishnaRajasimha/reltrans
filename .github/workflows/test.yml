@@ -54,8 +54,11 @@ jobs:
           # Stitch the large files back together
           cd reltrans-data
           cat $(ls xillverCp_v3.4_normalised.fits-* | sort -V) > xillverCp_v3.4_normalised.fits
-
+      - name: Setup pytest environment
+        run: |
+          python -m pip install --upgrade pytest numpy
       - name: Run tests
         run: |
           export RELTRANS_TABLES="$(realpath reltrans-data)"
-          ./utils/build/bin/relcli
+          export RELTRANS_PATH="$(realpath utils/build/lib/libreltrans.so)"
+          pytest -vvv test
