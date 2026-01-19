@@ -30,7 +30,7 @@ subroutine genreltrans(Cp, dset, nlp, ear, ne, param, ifl, photar)
     implicit none
     !Constants
     integer         , parameter :: nphi = 200, nro = 200!, ionvar! = 1 
-    real            , parameter :: Emin = 1e-2, Emax = 3e3, dyn = 1e-7
+    real            , parameter :: Emin = 1e-2, Emax = 3e3, dyn = 0.0 !1e-7
     double precision, parameter :: pi = acos(-1.d0), rnmax = 300.d0, &
                                    dlogf = 0.09 !This is a resolution parameter (base 10)       
     !Args:
@@ -76,7 +76,7 @@ subroutine genreltrans(Cp, dset, nlp, ear, ne, param, ifl, photar)
     integer                       :: mubin, rbin, ibin
     real    :: contx(nex,nlp)
     real    :: mue, logxi0, reline_w0(nlp,nex), imline_w0(nlp,nex), photarx(nex), photerx(nex)
-    real    :: absorbx(nex), ImGbar(nex), ReGbar(nex)
+    real    :: absorbx(nex), ImGbar(nex), ReGbar(nex), Hx(nex), Hx_delta(nex),Hx_dlogxi(nex)
     real    :: ReGx(nex),ImGx(nex),ReS(ne),ImS(ne)
     !variable for non linear effects
     integer ::  DC, ionvariation
@@ -351,41 +351,48 @@ subroutine genreltrans(Cp, dset, nlp, ear, ne, param, ifl, photar)
                    call rest_frame(earx,nex,Gamma0,Afe,logne,Cutoff_0,logxi2,thetae,Cp,photarx_2)
                    photarx_dlogxi = 0.434294481 * (photarx_2 - photarx_1) / (dlogxi2-dlogxi1) !pre-factor is 1/ln10
                 end if
+                !Multiply by E^{Gamma-1} to make less steep
+                do i = 1,nex
+                   E            = 0.5 * ( earx(i) + earx(i-1) )
+                   Hx(i)        = photarx(i)        * E**(Gamma0-1)
+                   Hx_delta(i)  = photarx_delta(i)  * E**(Gamma0-1)
+                   Hx_dlogxi(i) = photarx_dlogxi(i) * E**(Gamma0-1)
+                end do
                 !Loop through frequencies and lamp posts
                 do j = 1,nf
-                    do i = 1,nex
-                        do m=1,nlp
-                            reline_w0(m,i) = real( ker_W0(m,i,j,mubin,rbin) )
-                            imline_w0(m,i) = aimag( ker_W0(m,i,j,mubin,rbin) )
-                            reline_w1(m,i) = real( ker_W1(m,i,j,mubin,rbin) )
-                            imline_w1(m,i) = aimag( ker_W1(m,i,j,mubin,rbin) )
-                            reline_w2(m,i) = real( ker_W2(m,i,j,mubin,rbin) )
-                            imline_w2(m,i) = aimag( ker_W2(m,i,j,mubin,rbin) )
-                            reline_w3(m,i) = real( ker_W3(m,i,j,mubin,rbin) )
-                            imline_w3(m,i) = aimag( ker_W3(m,i,j,mubin,rbin) )
-                        end do  
-                    end do
-                    if (test) then
-                       call conv_one_FFT(dyn,photarx,reline_w0,imline_w0,ReW0(:,:,j),ImW0(:,:,j),DC,nlp)
-                       if(DC .eq. 0 .and. refvar .eq. 1) then
-                          call conv_one_FFT(dyn,photarx,reline_w1,imline_w1,ReW1(:,:,j),ImW1(:,:,j),DC,nlp)
-                          call conv_one_FFT(dyn,photarx_delta,reline_w2,imline_w2,ReW2(:,:,j),ImW2(:,:,j),DC,nlp)
-                       end if
-                       if(DC .eq. 0 .and. ionvar .eq. 1) then
-                          call conv_one_FFT(dyn,photarx_dlogxi,reline_w3,imline_w3,ReW3(:,:,j),ImW3(:,:,j),DC,nlp)
-                       end if
-                    else
-                       call conv_one_FFTw(dyn,photarx,reline_w0,imline_w0,ReW0(:,:,j),ImW0(:,:,j),DC,nlp)
-                       if(DC .eq. 0 .and. refvar .eq. 1) then
-
-                          call conv_one_FFTw(dyn,photarx,reline_w1,imline_w1,ReW1(:,:,j),ImW1(:,:,j),DC,nlp)
-                          call conv_one_FFTw(dyn,photarx_delta,reline_w2,imline_w2,ReW2(:,:,j),ImW2(:,:,j),DC,nlp)
-                       end if
-                       if(DC .eq. 0 .and. ionvar .eq. 1) then
-                          call conv_one_FFTw(dyn,photarx_dlogxi,reline_w3,imline_w3,ReW3(:,:,j),ImW3(:,:,j),DC,nlp)
-                       end if
-                    endif                    
-                 end do
+                   do i = 1,nex
+                      do m=1,nlp
+                         reline_w0(m,i) = real( ker_W0(m,i,j,mubin,rbin) )  
+                         imline_w0(m,i) = aimag( ker_W0(m,i,j,mubin,rbin) ) 
+                         reline_w1(m,i) = real( ker_W1(m,i,j,mubin,rbin) )  
+                         imline_w1(m,i) = aimag( ker_W1(m,i,j,mubin,rbin) ) 
+                         reline_w2(m,i) = real( ker_W2(m,i,j,mubin,rbin) )  
+                         imline_w2(m,i) = aimag( ker_W2(m,i,j,mubin,rbin) ) 
+                         reline_w3(m,i) = real( ker_W3(m,i,j,mubin,rbin) )  
+                         imline_w3(m,i) = aimag( ker_W3(m,i,j,mubin,rbin) ) 
+                      end do  
+                   end do
+                   !Do the convolution (involves multiplying by E^{1-Gamma})
+                   if (test) then
+                      call conv_one_FFT(dyn,earx,Gamma0,Hx,reline_w0,imline_w0,ReW0(:,:,j),ImW0(:,:,j),DC,nlp)
+                      if(DC .eq. 0 .and. refvar .eq. 1) then
+                         call conv_one_FFT(dyn,earx,Gamma0,Hx,reline_w1,imline_w1,ReW1(:,:,j),ImW1(:,:,j),DC,nlp)
+                         call conv_one_FFT(dyn,earx,Gamma0,Hx_delta,reline_w2,imline_w2,ReW2(:,:,j),ImW2(:,:,j),DC,nlp)
+                      end if
+                      if(DC .eq. 0 .and. ionvar .eq. 1) then
+                         call conv_one_FFT(dyn,earx,Gamma0,Hx_dlogxi,reline_w3,imline_w3,ReW3(:,:,j),ImW3(:,:,j),DC,nlp)
+                      end if
+                   else
+                      call conv_one_FFTw(dyn,earx,Gamma0,Hx,reline_w0,imline_w0,ReW0(:,:,j),ImW0(:,:,j),DC,nlp)
+                      if(DC .eq. 0 .and. refvar .eq. 1) then
+                         call conv_one_FFTw(dyn,earx,Gamma0,Hx,reline_w1,imline_w1,ReW1(:,:,j),ImW1(:,:,j),DC,nlp)
+                         call conv_one_FFTw(dyn,earx,Gamma0,Hx_delta,reline_w2,imline_w2,ReW2(:,:,j),ImW2(:,:,j),DC,nlp)
+                      end if
+                      if(DC .eq. 0 .and. ionvar .eq. 1) then
+                         call conv_one_FFTw(dyn,earx,Gamma0,Hx_dlogxi,reline_w3,imline_w3,ReW3(:,:,j),ImW3(:,:,j),DC,nlp)
+                      end if
+                   endif
+                end do
             end do
         end do
     end if

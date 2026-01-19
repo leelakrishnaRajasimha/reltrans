@@ -26,12 +26,12 @@ subroutine rtrans(verbose,dset,nlp,spin,h,mu0,Gamma,rin,rout,honr,d,rnmax,zcos,b
     ! me                    Number of mue bins
     ! xe                    Number of logr bins: bins 1:xe-1 are logarithmically spaced, bin xe is everything else
     ! OUTPUT
-    ! transe(ne,nf,me,xe)   Transfer function as a function of energy, frequency, emission ngle and radius
-    ! transe_a(ne,nf,me,xe) Second transfer function as a function of energy, frequency, emission ngle and radius
-    !                            This is for the non-linear effects
+    ! ker_W0(nlp,ne,nf,me,xe)  Transfer function W0 - linear transfer function
+    ! ker_W1(nlp,ne,nf,me,xe)  Transfer function W1 - one aspect of photon index variations
+    ! ker_W2(nlp,ne,nf,me,xe)  Transfer function W2 - other aspect of photon index variations
+    ! ker_W3(nlp,ne,nf,me,xe)  Transfer function W3 - ionization variations
     ! frobs                 Observer's reflection fraction
     ! frrel                 Reflection fraction defined by relxilllp
-    ! lens                  Lensing factor for direct emission * 4pi p(theta0,phi0)
     use dyn_gr
     use blcoordinate
     use radial_grids
@@ -216,7 +216,7 @@ subroutine rtrans(verbose,dset,nlp,spin,h,mu0,Gamma,rin,rout,honr,d,rnmax,zcos,b
                         gsd(m) = dglpfacthick(re,spin,h(m),mudisk) !source to disk g factor
                         emissivity(m) = gsd(m)**Gamma * 2.d0 * pi * ptf
                         emissivity(m) = emissivity(m) * cosfac / dareafac(re,spin)                  
-                        dFe(m) = emissivity(m) * g**3 * domega(i) / (1.d0+zcos)**3
+                        dFe(m) = emissivity(m) * (g/(1.d0+zcos))**(2.+Gamma) * domega(i)
                         !calculate extra factors that go into the transfer functions for double lps
                         if (nlp .gt. 1) then
                             thetafac(m) = emissivity(m)*gso(m)**(Gamma-2.)*gsd(m)**(2.-Gamma)                      
@@ -255,7 +255,7 @@ subroutine rtrans(verbose,dset,nlp,spin,h,mu0,Gamma,rin,rout,honr,d,rnmax,zcos,b
                             !single lamp post case, double check this later
                         endif     
                         !this is just to make the formatting below less ugly     
-                        normfac = real(g**3*domega(i)/(1.d0+zcos)**3)                 
+                        normfac = real((g/(1.d0+zcos))**(2.+Gamma)*domega(i))
                         !Add to the transfer function integral
                         do fbin = 1,nf
                             cexp = cmplx(cos(real(2.d0*pi*tau(nl)*fi(fbin))),sin(real(2.d0*pi*tau(nl)*fi(fbin))))
@@ -317,7 +317,7 @@ subroutine rtrans(verbose,dset,nlp,spin,h,mu0,Gamma,rin,rout,honr,d,rnmax,zcos,b
                     gsd(m) = dglpfacthick(re,spin,h(m),mudisk)
                     emissivity(m) = gsd(m)**Gamma * 2.d0 * pi * ptf
                     emissivity(m) = emissivity(m) * cosfac / dareafac(re,spin)
-                    dFe(m) = emissivity(m) * g**3 * domegan(i) / (1.d0+zcos)**3
+                    dFe(m) = emissivity(m) * (g/(1.d0+zcos))**(2.+Gamma) * domegan(i)
                     if (nlp .gt. 1) then
                         thetafac(m) = emissivity(m)*gso(m)**(Gamma-2.)*gsd(m)**(2.-Gamma)                      
                     else !single lamp post case, double check this later
@@ -351,7 +351,7 @@ subroutine rtrans(verbose,dset,nlp,spin,h,mu0,Gamma,rin,rout,honr,d,rnmax,zcos,b
                         !single lamp post case, double check this later
                     endif  
                     !this is just to make the formatting below less ugly     
-                    normfac = real(g**3*domegan(i)/(1.d0+zcos)**3)                 
+                    normfac = real((g/(1.d0+zcos))**(2.+Gamma)*domegan(i))
                     !Add to the transfer function integral
                     do fbin = 1,nf
                         cexp = cmplx(cos(real(2.d0*pi*tau(nl)*fi(fbin))),sin(real(2.d0*pi*tau(nl)*fi(fbin))))
