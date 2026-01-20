@@ -17,7 +17,8 @@ SNAPSHOT_DIR = ROOT_DIR / "_snapshots"
 
 def _get_snapshot(name: str) -> None | np.ndarray:
     """Retrieve the snapshot by name or None if the file does not exist."""
-    path = (SNAPSHOT_DIR / name).with_suffix(".npy")
+    path = SNAPSHOT_DIR / name
+    path = path.with_suffix("".join(path.suffixes) + ".npy")
     if not path.is_file():
         return None
     return np.load(str(path.absolute()))
