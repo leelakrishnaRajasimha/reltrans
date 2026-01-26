@@ -53,7 +53,7 @@ endif
 endif
 
 # the path to the reltrans library for the -L linker flag
-LIB_PATH := $(shell realpath utils/build)/lib
+LIB_PATH := $(shell realpath $(BUILD))/lib
 RELTRANS_SHARED_LIBRARY := $(BUILD)/lib/libreltrans.$(SHARED_EXT)
 
 all: $(BUILD) $(RELTRANS_SHARED_LIBRARY)
@@ -65,7 +65,7 @@ $(BUILD)/bin/relcli: ./utils/cli.c $(BUILD)/lib/libreltrans.$(SHARED_EXT)
 		-L$(BUILD)/lib -lgfortran -lc -lm -lmvec \
 		-Wl,-rpath,'$$ORIGIN/../lib' -lreltrans
 
-$(RELTRANS_SHARED_LIBRARY): $(BUILD)/cache/wrappers.o
+$(RELTRANS_SHARED_LIBRARY): $(BUILD) $(BUILD)/cache/wrappers.o
 	$(FC) $(FFLAGS) $(BUILD)/cache/wrappers.o -o $@ $(LDFLAGS)
 
 $(BUILD)/cache/%.o: $(ROOTDIR)/%.f90
