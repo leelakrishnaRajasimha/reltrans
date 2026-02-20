@@ -1,15 +1,17 @@
-Do you have a feature request?
-Please open an issue
+# Code of Conduct
 
-Be excellent to each other
+Be excellent to each other.
 
-Want to contribute?
+Please do not spam notifications. The reltrans team members are busy people and it may unfortunately take us a week or so to address your issues or PRs.
 
-Request to be assigned by the reltrans team on the relevant issue. You will only be assigned to one issue (you can't work on multiple assign at the same time)
+## Contributor policy
 
-We use the same AI policy as matplotlib 
-https://github.com/matplotlib/matplotlib/blob/6dbc0c7cdabb5435b047021b1f74b4a63c1b2f54/doc/devel/contribute.rst?plain=1#L188-L209
+Do you have a feature request? Please open an issue.
 
-Violations of this policy might lead us taking action
+Want to work on an issue? Request to be assigned by the reltrans team on the relevant issue. You will only be assigned to one issue at a time (you can't work on multiple assign at the same time)
 
+Our AI policy is the same as [Matplotlib's AI policy](https://github.com/matplotlib/matplotlib/blob/6dbc0c7cdabb5435b047021b1f74b4a63c1b2f54/doc/devel/contribute.rst?plain=1#L188-L209).
 
+---
+
+Violations of our code of conduct or contributor policy will not be tolerated and met with action.
