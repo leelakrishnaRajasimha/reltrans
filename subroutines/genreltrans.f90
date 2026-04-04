@@ -9,8 +9,8 @@ contains
         use dyn_gr, only: ndelta, cosd, dcosdr, rlp, tlp, npts, re1, pem1, taudo1
         use gr_continuum, only: tauso, gso, cosdelta_obs
         use radial_grids, only: logxir, gsdr, dfer_arr, logner
-        integer, intent(in) :: nlp
         type(t_config), intent(in) :: config
+        integer, intent(in) :: nlp
         ! allocate arrays for radial profiles
         allocate(dfer_arr(config%xe))
         allocate(logxir(config%xe))
